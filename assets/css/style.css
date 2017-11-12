@@ -1,0 +1,15 @@
+.jumbotron {
+	background-color: black;
+	color: white;
+}
+
+
+.panel-default {
+	border-color: black;
+	border-width: 2px;
+}
+
+.panel-default>.panel-heading {
+	background-color: black;
+	color: white;
+}
