@@ -14,7 +14,6 @@
   var connectionsRef = database.ref("/connections")
   var connectedRef = database.ref(".info/connected")
 
-
   connectedRef.on('value', function(connect){
 
     if(connect.val()){
@@ -27,7 +26,7 @@
 
   connectionsRef.on('value', function(connect){
 
-    $('#connectedUserCount').text("Connected Customers are: " + connect.numChildren())
+    $('#connectedUserCount').text("Currently " + connect.numChildren() + " customers are viewing")
   })
 
   $('#addButton').on('click', function(event){
@@ -50,9 +49,13 @@
 
   })
 
-  database.ref('/Train_Time_Schedule').orderByChild('timeStamp').on('child_added', function(data){
-  	
 
+
+  var timeKeeper = []
+  var isFirstTime = true
+  var childNum
+
+  database.ref('/Train_Time_Schedule').orderByChild('timeStamp').on('child_added', function(data){
     var tFirstTime = data.val().first_train_time
     var tFrequency = data.val().frequency
 
@@ -63,13 +66,74 @@
 
     var tRemainder = differentTime % tFrequency
     var tMinutesUntilTrain = tFrequency - tRemainder
+    var tSecondsLeft = tMinutesUntilTrain * 60
+
+    console.log(tSecondsLeft)
+    timeKeeper.push(tSecondsLeft)
+    if (isFirstTime === true){
+      console.log("Goes in here!11111")
+
+      childNum = data.numChildren()
+
+      childNum -= 2
+      console.log(childNum)
+      isFirstTime = false
+      if(childNum === 0) {
+        console.log("Goes in here!2222")
+        countDown()
+      }
+    } else {
+      console.log("Goes in here!4444")
+
+      childNum -= 1
+      console.log(childNum)
+      if(childNum === 0){
+        console.log("Goes in here!3333")
+        isFirstTime = true
+        
+        countDown()
+      }
+
+    }
+    
     var nextTrain = moment().add(tMinutesUntilTrain, "minutes").format('hh:mm a')
 
-  	
-  	$('#trainSchedule').append($('<tr>').append($('<td>').text(data.val().train_name)).append($('<td>').text(data.val().destination)).append($('<td>').text(data.val().frequency)).append($('<td>').text(nextTrain)).append($('<td>').text(tMinutesUntilTrain)))
+
+    $('#trainSchedule').append($('<tr>').append($('<td>').text(data.val().train_name))
+      .append($('<td>').text(data.val().destination))
+      .append($('<td>').text(data.val().frequency))
+      .append($('<td>').text(nextTrain))
+      .append($('<td>').text(tMinutesUntilTrain).addClass('minuteLeft')))
 
 
   }, function(error){
   	console.log('Could not read: ' + error)
 
   })
+
+
+  function countDown(){
+    console.log("come here!")
+    var shortestTime
+
+    for(var i = 0; i < timeKeeper.length - 1; i++){
+      if(timeKeeper[i] < timeKeeper[i+1]){
+        shortestTime = timeKeeper[i]
+      } else {
+        shortestTime = timeKeeper[i+1]
+      }
+
+    }
+
+    if (shortestTime < 300) {
+      setTimeout(refresh, shortestTime*1000)
+    } else {
+      setTimeout(refresh, 180000)
+    }
+    
+
+  }
+
+  function refresh() {
+    location.reload()
+  }
