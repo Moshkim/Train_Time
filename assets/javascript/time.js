@@ -53,7 +53,7 @@
 
   var timeKeeper = []
   var isFirstTime = true
-  var childNum
+  var childNum = 0
 
   database.ref('/Train_Time_Schedule').orderByChild('timeStamp').on('child_added', function(data){
     var tFirstTime = data.val().first_train_time
@@ -72,10 +72,11 @@
     timeKeeper.push(tSecondsLeft)
     if (isFirstTime === true){
       console.log("Goes in here!11111")
-
-      childNum = data.numChildren()
-
-      childNum -= 2
+      database.ref('Train_Time_Schedule').on('value', function(value){
+        childNum = value.numChildren()
+      })
+      
+      childNum -= 1
       console.log(childNum)
       isFirstTime = false
       if(childNum === 0) {
@@ -114,6 +115,7 @@
 
   function countDown(){
     console.log("come here!")
+    //timeKeeper = []
     var shortestTime
 
     for(var i = 0; i < timeKeeper.length - 1; i++){
@@ -124,15 +126,30 @@
       }
 
     }
+    console.log("The shortest time is: " + shortestTime)
 
-    if (shortestTime < 300) {
+    if (shortestTime === 60){
+
+      alert("You have 1 minute to catch the train!! Run!!")
       setTimeout(refresh, shortestTime*1000)
+
+    } else if (shortestTime == 180 || shortestTime == 120) {
+
+      alert("You have 2-3 minute to catch the train!! Run!!")
+      setTimeout(refresh, shortestTime*1000)
+
+    } else if (shortestTime < 300 && shortestTime > 180) {
+
+      setTimeout(refresh, shortestTime*1000)
+
     } else {
+
       setTimeout(refresh, 180000)
     }
     
 
   }
+
 
   function refresh() {
     location.reload()
